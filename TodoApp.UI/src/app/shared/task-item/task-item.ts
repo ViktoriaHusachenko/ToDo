@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { TaskDto } from '../../../core/models/task.model';
-import { TaskPriority } from '../../../core/models/task-priority.enum';
+import { TaskDto } from '../../core/models/task.model';
+import { TaskPriority } from '../../core/models/task-priority.enum';
 
 @Component({
     selector: 'app-task-item',
