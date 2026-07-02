@@ -2,7 +2,7 @@
 
 namespace TodoApp.Domain.Entities;
 
-public class Category : BaseEntity
+public class CategoryEntity : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
 
@@ -11,7 +11,7 @@ public class Category : BaseEntity
     public Guid UserId { get; set; }
 
     // Navigation Properties
-    public User User { get; set; } = null!;
+    public UserEntity User { get; set; } = null!;
 
-    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<TaskItemEntity> Tasks { get; set; } = new List<TaskItemEntity>();
 }

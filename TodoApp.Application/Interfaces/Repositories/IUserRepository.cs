@@ -1,16 +1,17 @@
 ﻿using TodoApp.Domain.Entities;
+using TodoApp.Application.Responses;
 
 namespace TodoApp.Application.Interfaces.Repositories;
 
 public interface IUserRepository
 {
-    Task<User?> GetByIdAsync(Guid id);
+    Task<Response<UserEntity?>> GetByIdAsync(Guid id);
 
-    Task<User?> GetByEmailAsync(string email);
+    Task<Response<UserEntity?>> GetByEmailAsync(string email);
 
-    Task AddAsync(User user);
+    Task<Response> AddAsync(UserEntity user);
 
-    Task<bool> ExistsByEmailAsync(string email);
+    Task<Response<bool>> ExistsByEmailAsync(string email);
 
-    Task SaveChangesAsync();
+    Task<Response> SaveChangesAsync();
 }

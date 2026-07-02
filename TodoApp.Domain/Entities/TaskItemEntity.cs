@@ -3,7 +3,7 @@ using TodoApp.Domain.Enums;
 
 namespace TodoApp.Domain.Entities;
 
-public class TaskItem : BaseEntity
+public class TaskItemEntity : BaseEntity
 {
     public string Title { get; set; } = string.Empty;
 
@@ -20,7 +20,7 @@ public class TaskItem : BaseEntity
     public Guid? CategoryId { get; set; }
 
     // Navigation Properties
-    public User User { get; set; } = null!;
+    public UserEntity User { get; set; } = null!;
 
-    public Category? Category { get; set; }
+    public CategoryEntity? Category { get; set; }
 }

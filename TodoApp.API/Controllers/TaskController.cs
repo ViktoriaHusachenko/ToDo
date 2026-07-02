@@ -11,7 +11,7 @@ namespace TodoApp.API.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/tasks")]
-public class TaskController : ControllerBase
+public class TaskController : ApiControllerBase
 {
     private readonly ITaskService _taskService;
 
@@ -43,16 +43,15 @@ public class TaskController : ControllerBase
             PageSize = pageSize
         };
 
-        var result = await _taskService.GetPagedAsync(userId.Value, pagination, search, categoryId);
-        return Ok(result);
+        var resp = await _taskService.GetPagedAsync(userId.Value, pagination, search, categoryId);
+        return ToResponse(resp);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _taskService.GetByIdAsync(id);
-        if (item is null) return NotFound();
-        return Ok(item);
+        var resp = await _taskService.GetByIdAsync(id);
+        return ToResponse(resp);
     }
 
     [HttpPost]
@@ -61,8 +60,8 @@ public class TaskController : ControllerBase
         var userId = GetUserIdFromClaims();
         if (userId is null) return Unauthorized();
 
-        var created = await _taskService.CreateAsync(userId.Value, dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        var resp = await _taskService.CreateAsync(userId.Value, dto);
+        return ToResponse(resp);
     }
 
     [HttpPut("{id}")]
@@ -72,33 +71,14 @@ public class TaskController : ControllerBase
         if (userId is null) return Unauthorized();
 
         if (dto.Id == Guid.Empty) dto.Id = id;
-
-        try
-        {
-            await _taskService.UpdateAsync(userId.Value, dto);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid();
-        }
+        var resp = await _taskService.UpdateAsync(userId.Value, dto);
+        return ToResponse(resp);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            await _taskService.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var resp = await _taskService.DeleteAsync(id);
+        return ToResponse(resp);
     }
 }

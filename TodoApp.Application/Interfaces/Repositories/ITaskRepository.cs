@@ -1,23 +1,24 @@
 ﻿using TodoApp.Application.DTOs.Pagination;
 using TodoApp.Domain.Entities;
+using TodoApp.Application.Responses;
 
 namespace TodoApp.Application.Interfaces.Repositories;
 
 public interface ITaskRepository
 {
-    Task<PagedResult<TaskItem>> GetPagedAsync(
+    Task<Response<PagedResult<TaskItemEntity>>> GetPagedAsync(
         Guid userId,
         PaginationParameters pagination,
         string? search,
         Guid? categoryId);
 
-    Task<TaskItem?> GetByIdAsync(Guid id);
+    Task<Response<TaskItemEntity>> GetByIdAsync(Guid id);
 
-    Task AddAsync(TaskItem task);
+    Task<Response> AddAsync(TaskItemEntity task);
 
-    Task UpdateAsync(TaskItem task);
+    Task<Response> UpdateAsync(TaskItemEntity task);
 
-    Task DeleteAsync(TaskItem task);
+    Task<Response> DeleteAsync(TaskItemEntity task);
 
-    Task SaveChangesAsync();
+    Task<Response> SaveChangesAsync();
 }

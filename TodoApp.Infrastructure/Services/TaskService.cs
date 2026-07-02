@@ -1,27 +1,26 @@
+using System.Net;
+using System.Linq;
 using TodoApp.Application.DTOs.Pagination;
 using TodoApp.Application.DTOs.Tasks;
 using TodoApp.Application.Interfaces.Repositories;
 using TodoApp.Application.Interfaces.Services;
+using TodoApp.Application.Responses;
 using TodoApp.Domain.Entities;
 
 namespace TodoApp.Infrastructure.Services;
 
-public class TaskService : ITaskService
+public class TaskService(ITaskRepository taskRepository) : ITaskService
 {
-    private readonly ITaskRepository _taskRepository;
-
-    public TaskService(ITaskRepository taskRepository)
-    {
-        _taskRepository = taskRepository;
-    }
-
-    public async Task<PagedResult<TaskDto>> GetPagedAsync(
+    public async Task<Response<PagedResult<TaskDto>>> GetPagedAsync(
         Guid userId,
         PaginationParameters pagination,
         string? search,
         Guid? categoryId)
     {
-        var paged = await _taskRepository.GetPagedAsync(userId, pagination, search, categoryId);
+        var pagedResp = await taskRepository.GetPagedAsync(userId, pagination, search, categoryId);
+        if (pagedResp.IsError) return Response<PagedResult<TaskDto>>.Error(pagedResp.ErrorMessage ?? "An error occurred.");
+
+        var paged = pagedResp.Value;
 
         var items = paged.Items.Select(t => new TaskDto
         {
@@ -34,21 +33,26 @@ public class TaskService : ITaskService
             CategoryName = t.Category?.Name
         });
 
-        return new PagedResult<TaskDto>
+        var result = new PagedResult<TaskDto>
         {
             Items = items,
             PageNumber = paged.PageNumber,
             PageSize = paged.PageSize,
             TotalCount = paged.TotalCount
         };
+
+        return Response<PagedResult<TaskDto>>.Ok(result);
     }
 
-    public async Task<TaskDto?> GetByIdAsync(Guid id)
+    public async Task<Response<TaskDto?>> GetByIdAsync(Guid id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task is null) return null;
+        var resp = await taskRepository.GetByIdAsync(id);
+        if (resp.IsError) return Response<TaskDto?>.Error(resp.ErrorMessage ?? "An error occurred.");
 
-        return new TaskDto
+        var task = resp.Value;
+        if (task is null) return Response<TaskDto?>.Ok(null, HttpStatusCode.NotFound);
+
+        var dto = new TaskDto
         {
             Id = task.Id,
             Title = task.Title,
@@ -58,11 +62,13 @@ public class TaskService : ITaskService
             Priority = task.Priority,
             CategoryName = task.Category?.Name
         };
+
+        return Response<TaskDto?>.Ok(dto);
     }
 
-    public async Task<TaskDto> CreateAsync(Guid userId, CreateTaskDto dto)
+    public async Task<Response<TaskDto>> CreateAsync(Guid userId, CreateTaskDto dto)
     {
-        var task = new TaskItem
+        var task = new TaskItemEntity
         {
             Title = dto.Title,
             Description = dto.Description,
@@ -73,10 +79,13 @@ public class TaskService : ITaskService
             UserId = userId
         };
 
-        await _taskRepository.AddAsync(task);
-        await _taskRepository.SaveChangesAsync();
+        var addResp = await taskRepository.AddAsync(task);
+        if (addResp.IsError) return Response<TaskDto>.Error(addResp.ErrorMessage ?? "Failed to add task.");
 
-        return new TaskDto
+        var saveResp = await taskRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response<TaskDto>.Error(saveResp.ErrorMessage ?? "Failed to save task.");
+
+        var dtoResult = new TaskDto
         {
             Id = task.Id,
             Title = task.Title,
@@ -86,20 +95,19 @@ public class TaskService : ITaskService
             Priority = task.Priority,
             CategoryName = task.Category?.Name
         };
+
+        return Response<TaskDto>.Ok(dtoResult, HttpStatusCode.Created);
     }
 
-    public async Task UpdateAsync(Guid userId, UpdateTaskDto dto)
+    public async Task<Response> UpdateAsync(Guid userId, UpdateTaskDto dto)
     {
-        var task = await _taskRepository.GetByIdAsync(dto.Id);
-        if (task is null)
-        {
-            throw new KeyNotFoundException("Task not found.");
-        }
+        var resp = await taskRepository.GetByIdAsync(dto.Id);
+        if (resp.IsError) return Response.Error(resp.ErrorMessage ?? "An error occurred.");
 
-        if (task.UserId != userId)
-        {
-            throw new UnauthorizedAccessException("You are not allowed to modify this task.");
-        }
+        var task = resp.Value;
+        if (task is null) return Response.Error("Task not found.", HttpStatusCode.NotFound);
+
+        if (task.UserId != userId) return Response.Error("You are not allowed to modify this task.", HttpStatusCode.Forbidden);
 
         task.Title = dto.Title;
         task.Description = dto.Description;
@@ -108,39 +116,67 @@ public class TaskService : ITaskService
         task.Priority = dto.Priority;
         task.CategoryId = dto.CategoryId;
 
-        await _taskRepository.UpdateAsync(task);
-        await _taskRepository.SaveChangesAsync();
+        var updateResp = await taskRepository.UpdateAsync(task);
+        if (updateResp.IsError) return Response.Error(updateResp.ErrorMessage ?? "Failed to update task.");
+
+        var saveResp = await taskRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task<Response> DeleteAsync(Guid id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task is null)
-        {
-            throw new KeyNotFoundException("Task not found.");
-        }
+        var resp = await taskRepository.GetByIdAsync(id);
+        if (resp.IsError) return Response.Error(resp.ErrorMessage ?? "An error occurred.");
 
-        await _taskRepository.DeleteAsync(task);
-        await _taskRepository.SaveChangesAsync();
+        var task = resp.Value;
+        if (task is null) return Response.Error("Task not found.", HttpStatusCode.NotFound);
+
+        var delResp = await taskRepository.DeleteAsync(task);
+        if (delResp.IsError) return Response.Error(delResp.ErrorMessage ?? "Failed to delete task.");
+
+        var saveResp = await taskRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 
-    public async Task CompleteAsync(Guid id)
+    public async Task<Response> CompleteAsync(Guid id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task is null) throw new KeyNotFoundException("Task not found.");
+        var resp = await taskRepository.GetByIdAsync(id);
+        if (resp.IsError) return Response.Error(resp.ErrorMessage ?? "An error occurred.");
+
+        var task = resp.Value;
+        if (task is null) return Response.Error("Task not found.", HttpStatusCode.NotFound);
 
         task.IsCompleted = true;
-        await _taskRepository.UpdateAsync(task);
-        await _taskRepository.SaveChangesAsync();
+
+        var updateResp = await taskRepository.UpdateAsync(task);
+        if (updateResp.IsError) return Response.Error(updateResp.ErrorMessage ?? "Failed to update task.");
+
+        var saveResp = await taskRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 
-    public async Task UncompleteAsync(Guid id)
+    public async Task<Response> UncompleteAsync(Guid id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task is null) throw new KeyNotFoundException("Task not found.");
+        var resp = await taskRepository.GetByIdAsync(id);
+        if (resp.IsError) return Response.Error(resp.ErrorMessage ?? "An error occurred.");
+
+        var task = resp.Value;
+        if (task is null) return Response.Error("Task not found.", HttpStatusCode.NotFound);
 
         task.IsCompleted = false;
-        await _taskRepository.UpdateAsync(task);
-        await _taskRepository.SaveChangesAsync();
+
+        var updateResp = await taskRepository.UpdateAsync(task);
+        if (updateResp.IsError) return Response.Error(updateResp.ErrorMessage ?? "Failed to update task.");
+
+        var saveResp = await taskRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 }

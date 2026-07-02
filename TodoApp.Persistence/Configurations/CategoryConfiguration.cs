@@ -4,9 +4,9 @@ using TodoApp.Domain.Entities;
 
 namespace TodoApp.Persistence.Configurations;
 
-public class CategoryConfiguration : IEntityTypeConfiguration<Category>
+public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 {
-    public void Configure(EntityTypeBuilder<Category> builder)
+    public void Configure(EntityTypeBuilder<CategoryEntity> builder)
     {
         builder.ToTable("Categories");
 

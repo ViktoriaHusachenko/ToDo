@@ -11,11 +11,11 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<User> Users => Set<User>();
+    public DbSet<UserEntity> Users => Set<UserEntity>();
 
-    public DbSet<TaskItem> Tasks => Set<TaskItem>();
+    public DbSet<TaskItemEntity> Tasks => Set<TaskItemEntity>();
 
-    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CategoryEntity> Categories => Set<CategoryEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

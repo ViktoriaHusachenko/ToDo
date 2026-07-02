@@ -1,41 +1,40 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoApp.Application.Interfaces.Repositories;
+using TodoApp.Application.Responses;
 using TodoApp.Domain.Entities;
 using TodoApp.Persistence.Context;
 
 namespace TodoApp.Persistence.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(AppDbContext context) : IUserRepository
 {
-    private readonly AppDbContext _context;
-
-    public UserRepository(AppDbContext context)
+    public async Task<Response<UserEntity?>> GetByIdAsync(Guid id)
     {
-        _context = context;
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        return Response<UserEntity?>.Ok(user);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<Response<UserEntity?>> GetByEmailAsync(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        return Response<UserEntity?>.Ok(user);
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<Response<bool>> ExistsByEmailAsync(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        var exists = await context.Users.AnyAsync(x => x.Email == email);
+        return Response<bool>.Ok(exists);
     }
 
-    public async Task<bool> ExistsByEmailAsync(string email)
+    public async Task<Response> AddAsync(UserEntity user)
     {
-        return await _context.Users.AnyAsync(x => x.Email == email);
+        await context.Users.AddAsync(user);
+        return Response.Ok();
     }
 
-    public async Task AddAsync(User user)
+    public async Task<Response> SaveChangesAsync()
     {
-        await _context.Users.AddAsync(user);
-    }
-
-    public async Task SaveChangesAsync()
-    {
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+        return Response.Ok();
     }
 }

@@ -31,6 +31,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IAuthService, AuthService>();
+// Register application services
+builder.Services.AddScoped<ITaskService, TodoApp.Infrastructure.Services.TaskService>();
+builder.Services.AddScoped<ICategoryService, TodoApp.Infrastructure.Services.CategoryService>();
 
 // JWT
 var jwtSettings = builder.Configuration
