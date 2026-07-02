@@ -1,58 +1,60 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoApp.Application.Interfaces.Repositories;
+using TodoApp.Application.Responses;
 using TodoApp.Domain.Entities;
 using TodoApp.Persistence.Context;
 
 namespace TodoApp.Persistence.Repositories;
 
-public class CategoryRepository : ICategoryRepository
+public class CategoryRepository(AppDbContext context) : ICategoryRepository
 {
-    private readonly AppDbContext _context;
-
-    public CategoryRepository(AppDbContext context)
+    public async Task<Response<IEnumerable<CategoryEntity>>> GetAllByUserAsync(Guid userId)
     {
-        _context = context;
-    }
-
-    public async Task<IEnumerable<Category>> GetAllByUserAsync(Guid userId)
-    {
-        return await _context.Categories
+        var list = await context.Categories
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.Name)
             .ToListAsync();
+
+        return Response<IEnumerable<CategoryEntity>>.Ok(list);
     }
 
-    public async Task<Category?> GetByIdAsync(Guid id)
+    public async Task<Response<CategoryEntity?>> GetByIdAsync(Guid id)
     {
-        return await _context.Categories
+        var category = await context.Categories
             .FirstOrDefaultAsync(c => c.Id == id);
+
+        return Response<CategoryEntity?>.Ok(category);
     }
 
-    public async Task<Category?> GetByNameAsync(Guid userId, string name)
+    public async Task<Response<CategoryEntity?>> GetByNameAsync(Guid userId, string name)
     {
-        return await _context.Categories
+        var category = await context.Categories
             .FirstOrDefaultAsync(c => c.UserId == userId && c.Name == name);
+
+        return Response<CategoryEntity?>.Ok(category);
     }
 
-    public async Task AddAsync(Category category)
+    public async Task<Response> AddAsync(CategoryEntity category)
     {
-        await _context.Categories.AddAsync(category);
+        await context.Categories.AddAsync(category);
+        return Response.Ok();
     }
 
-    public Task UpdateAsync(Category category)
+    public Task<Response> UpdateAsync(CategoryEntity category)
     {
-        _context.Categories.Update(category);
-        return Task.CompletedTask;
+        context.Categories.Update(category);
+        return Task.FromResult(Response.Ok());
     }
 
-    public Task DeleteAsync(Category category)
+    public Task<Response> DeleteAsync(CategoryEntity category)
     {
-        _context.Categories.Remove(category);
-        return Task.CompletedTask;
+        context.Categories.Remove(category);
+        return Task.FromResult(Response.Ok());
     }
 
-    public async Task SaveChangesAsync()
+    public async Task<Response> SaveChangesAsync()
     {
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+        return Response.Ok();
     }
 }

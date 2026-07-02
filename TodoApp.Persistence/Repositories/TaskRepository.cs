@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoApp.Application.DTOs.Pagination;
 using TodoApp.Application.Interfaces.Repositories;
+using TodoApp.Application.Responses;
 using TodoApp.Domain.Entities;
 using TodoApp.Persistence.Context;
 
@@ -15,13 +16,13 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<PagedResult<TaskItem>> GetPagedAsync(
+    public async Task<Response<PagedResult<TaskItemEntity>>> GetPagedAsync(
         Guid userId,
         PaginationParameters pagination,
         string? search,
         Guid? categoryId)
     {
-        IQueryable<TaskItem> query = _context.Tasks
+        IQueryable<TaskItemEntity> query = _context.Tasks
             .Include(t => t.Category)
             .Where(t => t.UserId == userId);
 
@@ -43,41 +44,47 @@ public class TaskRepository : ITaskRepository
             .Take(pagination.PageSize)
             .ToListAsync();
 
-        return new PagedResult<TaskItem>
+        var result = new PagedResult<TaskItemEntity>
         {
             Items = items,
             TotalCount = totalCount,
             PageNumber = pagination.PageNumber,
             PageSize = pagination.PageSize
         };
+
+        return Response<PagedResult<TaskItemEntity>>.Ok(result);
     }
 
-    public async Task<TaskItem?> GetByIdAsync(Guid id)
+    public async Task<Response<TaskItemEntity?>> GetByIdAsync(Guid id)
     {
-        return await _context.Tasks
+        var task = await _context.Tasks
             .Include(t => t.Category)
             .FirstOrDefaultAsync(t => t.Id == id);
+
+        return Response<TaskItemEntity?>.Ok(task);
     }
 
-    public async Task AddAsync(TaskItem task)
+    public async Task<Response> AddAsync(TaskItemEntity task)
     {
         await _context.Tasks.AddAsync(task);
+        return Response.Ok();
     }
 
-    public Task UpdateAsync(TaskItem task)
+    public Task<Response> UpdateAsync(TaskItemEntity task)
     {
         _context.Tasks.Update(task);
-        return Task.CompletedTask;
+        return Task.FromResult(Response.Ok());
     }
 
-    public Task DeleteAsync(TaskItem task)
+    public Task<Response> DeleteAsync(TaskItemEntity task)
     {
         _context.Tasks.Remove(task);
-        return Task.CompletedTask;
+        return Task.FromResult(Response.Ok());
     }
 
-    public async Task SaveChangesAsync()
+    public async Task<Response> SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
+        return Response.Ok();
     }
 }

@@ -4,9 +4,9 @@ using TodoApp.Domain.Entities;
 
 namespace TodoApp.Persistence.Configurations;
 
-public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
+public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItemEntity>
 {
-    public void Configure(EntityTypeBuilder<TaskItem> builder)
+    public void Configure(EntityTypeBuilder<TaskItemEntity> builder)
     {
         builder.ToTable("Tasks");
 

@@ -1,20 +1,21 @@
 ﻿using TodoApp.Domain.Entities;
+using TodoApp.Application.Responses;
 
 namespace TodoApp.Application.Interfaces.Repositories;
 
 public interface ICategoryRepository
 {
-    Task<IEnumerable<Category>> GetAllByUserAsync(Guid userId);
+    Task<Response<IEnumerable<CategoryEntity>>> GetAllByUserAsync(Guid userId);
 
-    Task<Category?> GetByIdAsync(Guid id);
+    Task<Response<CategoryEntity?>> GetByIdAsync(Guid id);
 
-    Task<Category?> GetByNameAsync(Guid userId, string name);
+    Task<Response<CategoryEntity?>> GetByNameAsync(Guid userId, string name);
 
-    Task AddAsync(Category category);
+    Task<Response> AddAsync(CategoryEntity category);
 
-    Task UpdateAsync(Category category);
+    Task<Response> UpdateAsync(CategoryEntity category);
 
-    Task DeleteAsync(Category category);
+    Task<Response> DeleteAsync(CategoryEntity category);
 
-    Task SaveChangesAsync();
+    Task<Response> SaveChangesAsync();
 }

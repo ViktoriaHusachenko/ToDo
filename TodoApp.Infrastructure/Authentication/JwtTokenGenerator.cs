@@ -16,7 +16,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(UserEntity user)
     {
         if (user is null) throw new ArgumentNullException(nameof(user));
 

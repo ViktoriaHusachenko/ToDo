@@ -1,6 +1,9 @@
+using System.Net;
+using System.Linq;
 using TodoApp.Application.DTOs.Categories;
 using TodoApp.Application.Interfaces.Repositories;
 using TodoApp.Application.Interfaces.Services;
+using TodoApp.Application.Responses;
 using TodoApp.Domain.Entities;
 
 namespace TodoApp.Infrastructure.Services;
@@ -14,89 +17,114 @@ public class CategoryService : ICategoryService
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<CategoryDto?> GetByIdAsync(Guid id)
+    public async Task<Response<CategoryDto?>> GetByIdAsync(Guid id)
     {
-        var category = await _categoryRepository.GetByIdAsync(id);
-        if (category is null) return null;
+        var categoryResp = await _categoryRepository.GetByIdAsync(id);
+        if (categoryResp.IsError) return Response<CategoryDto?>.Error(categoryResp.ErrorMessage ?? "An error occurred.");
 
-        return new CategoryDto
+        var category = categoryResp.Value;
+        if (category is null) return Response<CategoryDto?>.Ok(null, HttpStatusCode.NotFound);
+
+        var dto = new CategoryDto
         {
             Id = category.Id,
             Name = category.Name,
             Color = category.Color
         };
+
+        return Response<CategoryDto?>.Ok(dto);
     }
 
-    public async Task UpdateAsync(Guid id, CreateCategoryDto dto)
+    public async Task<Response> UpdateAsync(Guid id, CreateCategoryDto dto)
     {
-        var category = await _categoryRepository.GetByIdAsync(id);
-        if (category is null)
-        {
-            throw new KeyNotFoundException("Category not found.");
-        }
+        var categoryResp = await _categoryRepository.GetByIdAsync(id);
+        if (categoryResp.IsError) return Response.Error(categoryResp.ErrorMessage ?? "An error occurred.");
+
+        var category = categoryResp.Value;
+        if (category is null) return Response.Error("Category not found.", HttpStatusCode.NotFound);
 
         // Check duplicate name for the same user (excluding current category)
-        var existing = await _categoryRepository.GetByNameAsync(category.UserId, dto.Name);
+        var existingResp = await _categoryRepository.GetByNameAsync(category.UserId, dto.Name);
+        if (existingResp.IsError) return Response.Error(existingResp.ErrorMessage ?? "An error occurred.");
+
+        var existing = existingResp.Value;
         if (existing is not null && existing.Id != id)
         {
-            throw new InvalidOperationException("Category with the same name already exists.");
+            return Response.Error("Category with the same name already exists.", HttpStatusCode.BadRequest);
         }
 
         category.Name = dto.Name;
         category.Color = dto.Color;
 
-        await _categoryRepository.UpdateAsync(category);
-        await _categoryRepository.SaveChangesAsync();
+        var updateResp = await _categoryRepository.UpdateAsync(category);
+        if (updateResp.IsError) return Response.Error(updateResp.ErrorMessage ?? "Failed to update category.");
+
+        var saveResp = await _categoryRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 
-    public async Task<IEnumerable<CategoryDto>> GetAllAsync(Guid userId)
+    public async Task<Response<IEnumerable<CategoryDto>>> GetAllAsync(Guid userId)
     {
-        var categories = await _categoryRepository.GetAllByUserAsync(userId);
+        var categoriesResp = await _categoryRepository.GetAllByUserAsync(userId);
+        if (categoriesResp.IsError) return Response<IEnumerable<CategoryDto>>.Error(categoriesResp.ErrorMessage ?? "An error occurred.");
 
-        return categories.Select(c => new CategoryDto
+        var categories = categoriesResp.Value;
+
+        var items = categories.Select(c => new CategoryDto
         {
             Id = c.Id,
             Name = c.Name,
             Color = c.Color
         });
+
+        return Response<IEnumerable<CategoryDto>>.Ok(items);
     }
 
-    public async Task<CategoryDto> CreateAsync(Guid userId, CreateCategoryDto dto)
+    public async Task<Response<CategoryDto>> CreateAsync(Guid userId, CreateCategoryDto dto)
     {
-        // Check duplicate name for the same user
-        var existing = await _categoryRepository.GetByNameAsync(userId, dto.Name);
-        if (existing is not null)
-        {
-            throw new InvalidOperationException("Category with the same name already exists.");
-        }
+        var existingResp = await _categoryRepository.GetByNameAsync(userId, dto.Name);
+        if (existingResp.IsError) return Response<CategoryDto>.Error(existingResp.ErrorMessage ?? "An error occurred.");
+        if (existingResp.Value is not null) return Response<CategoryDto>.Error("Category with the same name already exists.", HttpStatusCode.BadRequest);
 
-        var category = new Category
+        var category = new CategoryEntity
         {
             Name = dto.Name,
             Color = dto.Color,
             UserId = userId
         };
 
-        await _categoryRepository.AddAsync(category);
-        await _categoryRepository.SaveChangesAsync();
+        var addResp = await _categoryRepository.AddAsync(category);
+        if (addResp.IsError) return Response<CategoryDto>.Error(addResp.ErrorMessage ?? "Failed to add category.");
 
-        return new CategoryDto
+        var saveResp = await _categoryRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response<CategoryDto>.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        var dtoResult = new CategoryDto
         {
             Id = category.Id,
             Name = category.Name,
             Color = category.Color
         };
+
+        return Response<CategoryDto>.Ok(dtoResult, HttpStatusCode.Created);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task<Response> DeleteAsync(Guid id)
     {
-        var category = await _categoryRepository.GetByIdAsync(id);
-        if (category is null)
-        {
-            throw new KeyNotFoundException("Category not found.");
-        }
+        var categoryResp = await _categoryRepository.GetByIdAsync(id);
+        if (categoryResp.IsError) return Response.Error(categoryResp.ErrorMessage ?? "An error occurred.");
 
-        await _categoryRepository.DeleteAsync(category);
-        await _categoryRepository.SaveChangesAsync();
+        var category = categoryResp.Value;
+        if (category is null) return Response.Error("Category not found.", HttpStatusCode.NotFound);
+
+        var delResp = await _categoryRepository.DeleteAsync(category);
+        if (delResp.IsError) return Response.Error(delResp.ErrorMessage ?? "Failed to delete category.");
+
+        var saveResp = await _categoryRepository.SaveChangesAsync();
+        if (saveResp.IsError) return Response.Error(saveResp.ErrorMessage ?? "Failed to save changes.");
+
+        return Response.Ok();
     }
 }

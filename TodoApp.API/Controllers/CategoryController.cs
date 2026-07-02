@@ -10,7 +10,7 @@ namespace TodoApp.API.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/categories")]
-public class CategoryController : ControllerBase
+public class CategoryController : ApiControllerBase
 {
     private readonly ICategoryService _categoryService;
 
@@ -32,16 +32,15 @@ public class CategoryController : ControllerBase
         var userId = GetUserIdFromClaims();
         if (userId is null) return Unauthorized();
 
-        var items = await _categoryService.GetAllAsync(userId.Value);
-        return Ok(items);
+        var resp = await _categoryService.GetAllAsync(userId.Value);
+        return ToResponse(resp);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _categoryService.GetByIdAsync(id);
-        if (item is null) return NotFound();
-        return Ok(item);
+        var resp = await _categoryService.GetByIdAsync(id);
+        return ToResponse(resp);
     }
 
     [HttpPost]
@@ -50,46 +49,21 @@ public class CategoryController : ControllerBase
         var userId = GetUserIdFromClaims();
         if (userId is null) return Unauthorized();
 
-        try
-        {
-            var created = await _categoryService.CreateAsync(userId.Value, dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var resp = await _categoryService.CreateAsync(userId.Value, dto);
+        return ToResponse(resp);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateCategoryDto dto)
     {
-        try
-        {
-            await _categoryService.UpdateAsync(id, dto);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var resp = await _categoryService.UpdateAsync(id, dto);
+        return ToResponse(resp);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            await _categoryService.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var resp = await _categoryService.DeleteAsync(id);
+        return ToResponse(resp);
     }
 }
