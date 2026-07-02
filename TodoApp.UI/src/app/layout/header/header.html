@@ -1,1 +1,24 @@
-<p>header works!</p>
+<header class="app-header d-flex align-items-center gap-3 px-3 px-md-4">
+    <div class="search-box flex-grow-1">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="search" class="form-control search-input" placeholder="Пошук задач" />
+    </div>
+
+    <div class="dropdown">
+        <button class="btn user-avatar-btn d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+            <span class="user-avatar">{{ currentUser()?.displayName?.charAt(0) ?? '?' }}</span>
+            <span class="d-none d-md-inline">{{ currentUser()?.displayName }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li>
+                <h6 class="dropdown-header">{{ currentUser()?.email }}</h6>
+            </li>
+            <li><a class="dropdown-item" routerLink="/profile">Профіль</a></li>
+            <li><a class="dropdown-item" routerLink="/settings">Налаштування</a></li>
+            <li>
+                <hr class="dropdown-divider" />
+            </li>
+            <li><button class="dropdown-item text-danger" type="button" (click)="logout()">Вийти</button></li>
+        </ul>
+    </div>
+</header>

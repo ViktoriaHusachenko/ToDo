@@ -1,1 +1,9 @@
-<p>shell works!</p>
+<div class="shell d-flex">
+    <app-sidebar />
+    <div class="shell-main flex-grow-1 d-flex flex-column">
+        <app-header />
+        <main class="shell-content flex-grow-1">
+            <router-outlet />
+        </main>
+    </div>
+</div>
