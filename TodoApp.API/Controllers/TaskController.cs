@@ -23,6 +23,12 @@ public class TaskController : ApiControllerBase
     private Guid? GetUserIdFromClaims()
     {
         var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (string.IsNullOrWhiteSpace(sub))
+        {
+            // fallback to mapped name identifier claim
+            sub = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        }
+
         if (string.IsNullOrWhiteSpace(sub)) return null;
         return Guid.TryParse(sub, out var id) ? id : null;
     }
