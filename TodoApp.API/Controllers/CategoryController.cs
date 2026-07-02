@@ -13,26 +13,20 @@ namespace TodoApp.API.Controllers;
 public class CategoryController : ApiControllerBase
 {
     private readonly ICategoryService _categoryService;
+    private readonly ICurrentUserContext _currentUser;
 
-    public CategoryController(ICategoryService categoryService)
+    public CategoryController(ICategoryService categoryService, ICurrentUserContext currentUser)
     {
         _categoryService = categoryService;
-    }
-
-    private Guid? GetUserIdFromClaims()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (string.IsNullOrWhiteSpace(sub)) return null;
-        return Guid.TryParse(sub, out var id) ? id : null;
+        _currentUser = currentUser;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var userId = GetUserIdFromClaims();
-        if (userId is null) return Unauthorized();
+        if (!_currentUser.IsAuthenticated || _currentUser.Id is null) return Unauthorized();
 
-        var resp = await _categoryService.GetAllAsync(userId.Value);
+        var resp = await _categoryService.GetAllAsync(_currentUser.Id.Value);
         return ToResponse(resp);
     }
 
@@ -46,10 +40,9 @@ public class CategoryController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId is null) return Unauthorized();
+        if (!_currentUser.IsAuthenticated || _currentUser.Id is null) return Unauthorized();
 
-        var resp = await _categoryService.CreateAsync(userId.Value, dto);
+        var resp = await _categoryService.CreateAsync(_currentUser.Id.Value, dto);
         return ToResponse(resp);
     }
 

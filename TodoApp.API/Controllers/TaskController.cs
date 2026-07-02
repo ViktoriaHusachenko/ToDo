@@ -14,17 +14,12 @@ namespace TodoApp.API.Controllers;
 public class TaskController : ApiControllerBase
 {
     private readonly ITaskService _taskService;
+    private readonly ICurrentUserContext _currentUser;
 
-    public TaskController(ITaskService taskService)
+    public TaskController(ITaskService taskService, ICurrentUserContext currentUser)
     {
         _taskService = taskService;
-    }
-
-    private Guid? GetUserIdFromClaims()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (string.IsNullOrWhiteSpace(sub)) return null;
-        return Guid.TryParse(sub, out var id) ? id : null;
+        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -34,8 +29,7 @@ public class TaskController : ApiControllerBase
         [FromQuery] string? search = null,
         [FromQuery] Guid? categoryId = null)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId is null) return Unauthorized();
+        if (!_currentUser.IsAuthenticated || _currentUser.Id is null) return Unauthorized();
 
         var pagination = new PaginationParameters
         {
@@ -43,7 +37,7 @@ public class TaskController : ApiControllerBase
             PageSize = pageSize
         };
 
-        var resp = await _taskService.GetPagedAsync(userId.Value, pagination, search, categoryId);
+        var resp = await _taskService.GetPagedAsync(_currentUser.Id.Value, pagination, search, categoryId);
         return ToResponse(resp);
     }
 
@@ -57,21 +51,19 @@ public class TaskController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTaskDto dto)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId is null) return Unauthorized();
+        if (!_currentUser.IsAuthenticated || _currentUser.Id is null) return Unauthorized();
 
-        var resp = await _taskService.CreateAsync(userId.Value, dto);
+        var resp = await _taskService.CreateAsync(_currentUser.Id.Value, dto);
         return ToResponse(resp);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskDto dto)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId is null) return Unauthorized();
+        if (!_currentUser.IsAuthenticated || _currentUser.Id is null) return Unauthorized();
 
         if (dto.Id == Guid.Empty) dto.Id = id;
-        var resp = await _taskService.UpdateAsync(userId.Value, dto);
+        var resp = await _taskService.UpdateAsync(_currentUser.Id.Value, dto);
         return ToResponse(resp);
     }
 

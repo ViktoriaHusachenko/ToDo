@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
 using TodoApp.Domain.Entities;
 
@@ -20,24 +19,29 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     {
         if (user is null) throw new ArgumentNullException(nameof(user));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
+        // Create standard claims
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("displayName", user.DisplayName ?? string.Empty)
         };
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken(
-            issuer: _settings.Issuer,
-            audience: _settings.Audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes),
-            signingCredentials: creds
-        );
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes),
+            SigningCredentials = creds,
+            NotBefore = DateTime.UtcNow,
+            IssuedAt = DateTime.UtcNow
+        };
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.CreateToken(tokenDescriptor);
+        return handler.WriteToken(token);
     }
 }

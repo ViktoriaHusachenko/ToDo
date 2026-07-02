@@ -6,9 +6,9 @@ namespace TodoApp.Persistence.Context;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-    : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
+        Database.Migrate();
     }
 
     public DbSet<UserEntity> Users => Set<UserEntity>();
@@ -23,11 +23,10 @@ public class AppDbContext : DbContext
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
-    public override async Task<int> SaveChangesAsync(
-    CancellationToken cancellationToken = default)
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var entries = ChangeTracker
-            .Entries<BaseEntity>();
+        var entries = ChangeTracker.Entries<BaseEntity>();
 
         foreach (var entry in entries)
         {

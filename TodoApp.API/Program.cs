@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using TodoApp.API.Security;
 using TodoApp.Application.Interfaces.Services;
 using TodoApp.Infrastructure;
 using TodoApp.Infrastructure.Authentication;
-using TodoApp.Persistence.Context;
 using TodoApp.Persistence.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,10 +33,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TodoApp.Infrastructure.Services.TaskService>();
 builder.Services.AddScoped<ICategoryService, TodoApp.Infrastructure.Services.CategoryService>();
 
+// HttpContextAccessor and current user registration (API hosts ASP.NET Core)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+
 // JWT
-var jwtSettings = builder.Configuration
-    .GetSection(JwtSettings.SectionName)
-    .Get<JwtSettings>()!;
+// Get JwtSettings from the infrastructure registrations so the same instance is used everywhere
+var jwtSettings = builder.Services.BuildServiceProvider().GetRequiredService<JwtSettings>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -49,18 +50,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
 
-        ValidIssuer = jwtSettings.Issuer,
-        ValidAudience = jwtSettings.Audience,
-
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings.Key)),
-
-        ClockSkew = TimeSpan.Zero
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
     };
 });
 
@@ -103,13 +98,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Apply migrations
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -117,13 +105,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
