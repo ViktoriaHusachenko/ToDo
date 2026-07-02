@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -30,15 +31,17 @@ builder.Services.AddCors(options =>
 // Dependency Injection
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<IAuthService, AuthService>();
-// Register application services
-builder.Services.AddScoped<ITaskService, TodoApp.Infrastructure.Services.TaskService>();
-builder.Services.AddScoped<ICategoryService, TodoApp.Infrastructure.Services.CategoryService>();
 
 // JWT
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
     .Get<JwtSettings>()!;
+
+// Ensure the same JwtSettings instance is available to the DI container
+builder.Services.AddSingleton(jwtSettings);
+
+// Prevent mapping of JWT claim types to Microsoft-specific claim types so claim names stay as in token
+System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -61,6 +64,46 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(jwtSettings.Key)),
 
         ClockSkew = TimeSpan.Zero
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("[Jwt] Authentication failed: " + context.Exception?.Message);
+            if (context.Exception != null)
+            {
+                Console.WriteLine(context.Exception);
+            }
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            try
+            {
+                var token = context.SecurityToken as JwtSecurityToken;
+                Console.WriteLine("[Jwt] Token validated. Claims:");
+                foreach (var c in context.Principal.Claims)
+                {
+                    Console.WriteLine($"[Jwt] {c.Type}: {c.Value}");
+                }
+                if (token != null)
+                {
+                    Console.WriteLine($"[Jwt] token issuer: {token.Issuer}, audience: {string.Join(',', token.Audiences)}, expires: {token.ValidTo}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[Jwt] OnTokenValidated exception: " + ex.Message);
+            }
+
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            Console.WriteLine("[Jwt] OnChallenge called. Error: " + context.Error + ", Description: " + context.ErrorDescription);
+            return Task.CompletedTask;
+        }
     };
 });
 
