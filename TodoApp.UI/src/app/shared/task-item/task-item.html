@@ -1,0 +1,42 @@
+<div class="task-item d-flex align-items-center gap-2" [class.completed]="task().isCompleted">
+    <button type="button" class="check-btn" [class.checked]="task().isCompleted" (click)="toggleComplete.emit()">
+        @if (task().isCompleted) {
+        <span class="material-symbols-outlined">check</span>
+        }
+    </button>
+
+    <div class="task-body flex-grow-1">
+        <div class="task-title">{{ task().title }}</div>
+
+        @if (task().description) {
+        <div class="task-description text-muted small">{{ task().description }}</div>
+        }
+
+        <div class="task-meta d-flex align-items-center gap-2 small">
+            @if (task().dueDate) {
+            <span class="meta-badge" [class.text-danger]="isOverdue">
+                <span class="material-symbols-outlined">calendar_today</span>
+                {{ task().dueDate | date: 'd MMM' }}
+            </span>
+            }
+            @if (task().categoryName) {
+            <span class="meta-badge">{{ task().categoryName }}</span>
+            }
+            <span class="meta-badge priority-{{ task().priority }}">
+                @switch (task().priority) {
+                @case (TaskPriority.High) { Високий пріоритет }
+                @case (TaskPriority.Medium) { Середній пріоритет }
+                @default { Низький пріоритет }
+                }
+            </span>
+        </div>
+    </div>
+
+    <button type="button" class="star-btn" [class.active]="isImportant()" (click)="toggleImportant.emit()">
+        <span class="material-symbols-outlined">{{ isImportant() ? 'star' : 'star_outline' }}</span>
+    </button>
+
+    <button type="button" class="delete-btn" (click)="deleteTask.emit()">
+        <span class="material-symbols-outlined">delete</span>
+    </button>
+</div>

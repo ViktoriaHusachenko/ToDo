@@ -1,0 +1,24 @@
+.page-icon {
+    font-size: 28px;
+}
+
+.planned-icon {
+    color: var(--accent-color);
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: #c8c6c4;
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #605e5c;
+    margin: 1.25rem 0 0.5rem;
+}
+
+.section-title:first-of-type {
+    margin-top: 0;
+}

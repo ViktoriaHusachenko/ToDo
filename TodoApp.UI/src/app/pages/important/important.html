@@ -1,0 +1,18 @@
+<div class="page-header d-flex align-items-center gap-2 mb-4">
+    <span class="material-symbols-outlined page-icon important-icon">star</span>
+    <h1 class="h4 mb-0">Важливі</h1>
+</div>
+
+@if (isLoading()) {
+<div class="text-center text-muted py-5">Завантаження...</div>
+} @else if (importantTasks().length === 0) {
+<div class="empty-state text-center text-muted py-5">
+    <span class="material-symbols-outlined empty-icon">star_outline</span>
+    <p class="mt-2 mb-0">Немає важливих задач.<br />Натисніть на зірочку біля задачі, щоб додати її сюди.</p>
+</div>
+} @else {
+@for (task of importantTasks(); track task.id) {
+<app-task-item [task]="task" [isImportant]="true" (toggleComplete)="onToggleComplete(task)"
+    (toggleImportant)="onToggleImportant(task.id)" (deleteTask)="onDelete(task.id)" />
+}
+}

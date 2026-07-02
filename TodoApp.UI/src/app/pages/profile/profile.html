@@ -1,0 +1,23 @@
+<div class="page-header d-flex align-items-center gap-2 mb-4">
+    <span class="material-symbols-outlined page-icon">account_circle</span>
+    <h1 class="h4 mb-0">Профіль</h1>
+</div>
+
+<div class="profile-card card">
+    <div class="card-body p-4 d-flex align-items-center gap-3">
+        <span class="profile-avatar">{{ currentUser()?.displayName?.charAt(0) ?? '?' }}</span>
+        <div>
+            <div class="fw-semibold fs-5">{{ currentUser()?.displayName }}</div>
+            <div class="text-muted">{{ currentUser()?.email }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-light border mt-3 small text-muted">
+    Редагування профілю поки недоступне — на бекенді немає endpoint для оновлення даних користувача.
+</div>
+
+<button type="button" class="btn btn-outline-danger mt-2" (click)="logout()">
+    <span class="material-symbols-outlined align-middle me-1" style="font-size: 18px;">logout</span>
+    Вийти з акаунту
+</button>
