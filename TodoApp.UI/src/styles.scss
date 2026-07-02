@@ -1,3 +1,5 @@
+@import "bootstrap/scss/bootstrap";
+
 :root {
     --accent-color: #0078d4; // MS To Do синій за замовчуванням; змінюється в Settings (наступний крок)
     --bs-primary: var(--accent-color);
