@@ -1,39 +1,220 @@
-<aside class="app-sidebar d-flex flex-column">
-    <div class="sidebar-brand px-3 py-3">
-        <span class="material-symbols-outlined">check_circle</span>
-        <span class="brand-text">TodoApp</span>
+<nav class="sidebar-nav flex-grow-1">
+
+    <a routerLink="/tasks"
+       [queryParams]="{ view: 'today' }"
+       routerLinkActive="active"
+       class="nav-link">
+
+        <span class="material-symbols-outlined">wb_sunny</span>
+        <span>Сьогодні</span>
+
+    </a>
+
+    <a routerLink="/important"
+       routerLinkActive="active"
+       class="nav-link">
+
+        <span class="material-symbols-outlined">star</span>
+        <span>Важливі</span>
+
+    </a>
+
+    <a routerLink="/planned"
+       routerLinkActive="active"
+       class="nav-link">
+
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span>Заплановані</span>
+
+    </a>
+
+    <a routerLink="/tasks"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: true }"
+       class="nav-link">
+
+        <span class="material-symbols-outlined">list_alt</span>
+        <span>Усі задачі</span>
+
+    </a>
+
+    <a routerLink="/completed"
+       routerLinkActive="active"
+       class="nav-link">
+
+        <span class="material-symbols-outlined">task_alt</span>
+        <span>Виконані</span>
+
+    </a>
+
+    <hr class="mx-3">
+
+    <div class="d-flex justify-content-between align-items-center px-3 py-2">
+
+        <span class="small text-uppercase text-muted">
+            Категорії
+        </span>
+
+        <button
+            type="button"
+            class="icon-btn-sm"
+            (click)="openCreateForm()">
+
+            <span class="material-symbols-outlined">
+                add
+            </span>
+
+        </button>
+
     </div>
 
-    <nav class="sidebar-nav flex-grow-1">
-        <a routerLink="/tasks" [queryParams]="{ view: 'today' }" routerLinkActive="active" class="nav-link">
-            <span class="material-symbols-outlined">wb_sunny</span>
-            <span>Сьогодні</span>
-        </a>
-        <a routerLink="/important" routerLinkActive="active" class="nav-link">
-            <span class="material-symbols-outlined">star</span>
-            <span>Важливі</span>
-        </a>
-        <a routerLink="/planned" routerLinkActive="active" class="nav-link">
-            <span class="material-symbols-outlined">calendar_month</span>
-            <span>Заплановані</span>
-        </a>
-        <a routerLink="/tasks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
-            <span class="material-symbols-outlined">list_alt</span>
-            <span>Усі задачі</span>
-        </a>
-        <a routerLink="/completed" routerLinkActive="active" class="nav-link">
-            <span class="material-symbols-outlined">task_alt</span>
-            <span>Виконані</span>
+    @for (category of categories(); track category.id) {
+
+    <div class="nav-link category-link d-flex justify-content-between align-items-center">
+
+        <a
+            class="d-flex align-items-center flex-grow-1 text-decoration-none text-reset"
+            routerLink="/tasks"
+            [queryParams]="{ categoryId: category.id }">
+
+            <span
+                class="category-dot me-2"
+                [style.background]="category.color || '#605e5c'">
+            </span>
+
+            {{ category.name }}
+
         </a>
 
-        <hr class="mx-3" />
-        <div class="px-3 py-1 text-muted small text-uppercase">Категорії</div>
+        <div class="category-actions">
 
-        @for (category of categories(); track category.id) {
-        <a routerLink="/tasks" [queryParams]="{ categoryId: category.id }" class="nav-link category-link">
-            <span class="category-dot" [style.background-color]="category.color || '#605e5c'"></span>
-            <span>{{ category.name }}</span>
-        </a>
-        }
-    </nav>
-</aside>
+            <button
+                type="button"
+                class="icon-btn-sm"
+                (click)="openEditForm(category,$event)">
+
+                <span class="material-symbols-outlined">
+                    edit
+                </span>
+
+            </button>
+
+            <button
+                type="button"
+                class="icon-btn-sm"
+                (click)="deleteCategory(category,$event)">
+
+                <span class="material-symbols-outlined">
+                    delete
+                </span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    }
+
+</nav>
+
+@if (isFormOpen()) {
+
+<div class="modal-backdrop-custom" (click)="closeForm()"></div>
+
+<div class="modal d-block">
+
+    <div class="modal-dialog modal-dialog-centered"
+         (click)="$event.stopPropagation()">
+
+        <div class="modal-content">
+
+            <form
+                [formGroup]="form"
+                (ngSubmit)="submit()">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        {{ editingCategoryId()
+                        ? 'Редагувати категорію'
+                        : 'Нова категорія' }}
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        (click)="closeForm()">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <label class="form-label">
+
+                        Назва
+
+                    </label>
+
+                    <input
+                        class="form-control mb-3"
+                        formControlName="name">
+
+                    <label class="form-label">
+
+                        Колір
+
+                    </label>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        @for (color of palette; track color) {
+
+                        <button
+                            type="button"
+                            class="color-swatch"
+                            [class.selected]="form.value.color===color"
+                            [style.background]="color"
+                            (click)="form.patchValue({color:color})">
+
+                        </button>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="closeForm()">
+
+                        Скасувати
+
+                    </button>
+
+                    <button
+                        class="btn btn-primary"
+                        type="submit">
+
+                        Зберегти
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+}

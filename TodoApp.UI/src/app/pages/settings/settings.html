@@ -1,1 +1,72 @@
-<p>settings works!</p>
+<div class="page-header d-flex align-items-center gap-2 mb-4">
+  <span class="material-symbols-outlined page-icon">settings</span>
+  <h1 class="h4 mb-0">Налаштування</h1>
+</div>
+
+<div class="settings-section card mb-3">
+  <div class="card-body">
+    <h2 class="h6 mb-3">Тема</h2>
+    <div class="d-flex gap-2">
+      <button type="button" class="theme-card" [class.selected]="settingsService.theme() === 'light'" (click)="setTheme('light')">
+        <span class="material-symbols-outlined">light_mode</span>
+        <span>Світла</span>
+      </button>
+      <button type="button" class="theme-card" [class.selected]="settingsService.theme() === 'dark'" (click)="setTheme('dark')">
+        <span class="material-symbols-outlined">dark_mode</span>
+        <span>Темна</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section card mb-3">
+  <div class="card-body">
+    <h2 class="h6 mb-3">Акцентний колір</h2>
+    <div class="d-flex gap-2 flex-wrap">
+      @for (color of accentPalette; track color) {
+        <button type="button" class="color-swatch"
+          [class.selected]="settingsService.accentColor() === color"
+          [style.background-color]="color"
+          (click)="setAccent(color)"></button>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="settings-section card mb-3">
+  <div class="card-body d-flex align-items-center justify-content-between">
+    <div>
+      <h2 class="h6 mb-1">Звуки</h2>
+      <p class="text-muted small mb-0">Звуковий сигнал при виконанні задачі</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      @if (settingsService.soundsEnabled()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="testSound()">Тест</button>
+      }
+      <div class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" role="switch"
+               [checked]="settingsService.soundsEnabled()" (change)="toggleSounds()" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section card">
+  <div class="card-body d-flex align-items-center justify-content-between">
+    <div>
+      <h2 class="h6 mb-1">Сповіщення</h2>
+      <p class="text-muted small mb-0">
+        Дозвіл браузера на сповіщення. Автоматичні нагадування про дедлайни поки не реалізовані — це лише перемикач дозволу.
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      @if (settingsService.notificationsEnabled()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="testNotification()">Тест</button>
+      }
+      <div class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" role="switch"
+               [checked]="settingsService.notificationsEnabled()" (change)="toggleNotifications()" />
+      </div>
+    </div>
+  </div>
+</div>

@@ -73,4 +73,18 @@ public class TaskController : ApiControllerBase
         var resp = await _taskService.DeleteAsync(id);
         return ToResponse(resp);
     }
+
+    [HttpPatch("{id}/complete")]
+    public async Task<IActionResult> Complete(Guid id)
+    {
+        var response = await _taskService.CompleteAsync(id);
+        return ToResponse(response);
+    }
+
+    [HttpPatch("{id}/uncomplete")]
+    public async Task<IActionResult> Uncomplete(Guid id)
+    {
+        var response = await _taskService.UncompleteAsync(id);
+        return ToResponse(response);
+    }
 }

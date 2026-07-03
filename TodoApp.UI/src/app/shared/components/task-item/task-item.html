@@ -1,9 +1,15 @@
 <div class="task-item d-flex align-items-center gap-2" [class.completed]="task().isCompleted">
-    <button type="button" class="check-btn" [class.checked]="task().isCompleted" (click)="toggleComplete.emit()">
-        @if (task().isCompleted) {
+  <button
+    type="button"
+    class="check-btn"
+    [class.checked]="task().isCompleted"
+    (click)="onCheckClick()">
+
+    @if (task().isCompleted) {
         <span class="material-symbols-outlined">check</span>
-        }
-    </button>
+    }
+
+</button>
 
     <div class="task-body flex-grow-1">
         <div class="task-title">{{ task().title }}</div>

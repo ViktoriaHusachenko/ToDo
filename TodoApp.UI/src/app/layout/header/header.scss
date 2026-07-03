@@ -1,44 +1,67 @@
-.app-header {
-    height: 64px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #edebe9;
+.app-header{
+
+  height:64px;
+
+  background:var(--header-bg);
+
+  border-bottom:1px solid var(--border-color);
+
+  color:var(--text-color);
 }
 
-.search-box {
-    position: relative;
-    max-width: 400px;
+.search-box{
+
+  position:relative;
+  max-width:400px;
 }
 
-.search-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #605e5c;
-    font-size: 20px;
+.search-icon{
+
+  position:absolute;
+  left:.75rem;
+  top:50%;
+  transform:translateY(-50%);
+
+  color:var(--text-secondary);
+
+  font-size:20px;
 }
 
-.search-input {
-    padding-left: 2.25rem;
-    border-radius: 2rem;
-    background-color: #f3f2f1;
-    border: none;
+.search-input{
+
+  padding-left:2.25rem;
+
+  border-radius:2rem;
+
+  background:var(--surface);
+
+  color:var(--text-color);
+
+  border:none;
 }
 
-.user-avatar-btn {
-    border-radius: 2rem;
-    border: none;
+.user-avatar-btn{
+
+  border:none;
+  border-radius:2rem;
 }
 
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    text-transform: uppercase;
+.user-avatar{
+
+  width:32px;
+  height:32px;
+
+  border-radius:50%;
+
+  background:var(--accent-color);
+
+  color:#fff;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:600;
+
+  text-transform:uppercase;
 }

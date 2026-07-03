@@ -1,34 +1,84 @@
 @import "bootstrap/scss/bootstrap";
 
 :root {
-    --accent-color: #0078d4; // MS To Do синій за замовчуванням; змінюється в Settings (наступний крок)
-    --bs-primary: var(--accent-color);
-    --sidebar-width: 280px;
+
+  --accent-color: #0078d4;
+  --bs-primary: var(--accent-color);
+  --sidebar-width: 280px;
+
+  --app-bg: #faf9f8;
+  --surface: #ffffff;
+  --sidebar-bg: #f3f2f1;
+  --header-bg: #ffffff;
+
+  --text-color: #201f1e;
+  --text-secondary: #605e5c;
+
+  --border-color: #edebe9;
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: #faf9f8;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--app-bg);
+  color: var(--text-color);
 }
 
 .auth-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #eef3ff 0%, #ffffff 100%);
-    padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#eef3ff 0%,#ffffff 100%);
+  padding:1rem;
 }
 
-.auth-card {
-    width: 100%;
-    max-width: 400px;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+.auth-card{
+  width:100%;
+  max-width:400px;
+  border:none;
+  border-radius:1rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.08)!important;
 }
 
-.auth-logo {
-    font-size: 2.5rem;
-    color: var(--accent-color);
+.auth-logo{
+  font-size:2.5rem;
+  color:var(--accent-color);
+}
+
+[data-bs-theme="dark"]{
+
+  --app-bg:#1b1b1b;
+  --surface:#252423;
+  --sidebar-bg:#252423;
+  --header-bg:#201f1e;
+
+  --text-color:#f3f2f1;
+  --text-secondary:#d2d0ce;
+
+  --border-color:#3b3a39;
+
+  body{
+    background:var(--app-bg);
+    color:var(--text-color);
+  }
+
+  .form-control,
+  .form-select,
+  .search-input{
+
+    background:#323130;
+    color:#fff;
+    border-color:#555;
+  }
+
+  .form-control::placeholder,
+  .search-input::placeholder{
+    color:#b3b3b3;
+  }
+
+  .btn-outline-secondary{
+    color:#fff;
+    border-color:#555;
+  }
+
 }

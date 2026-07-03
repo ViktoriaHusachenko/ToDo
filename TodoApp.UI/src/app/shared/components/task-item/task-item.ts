@@ -2,6 +2,8 @@ import { Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TaskDto } from '../../../core/models/task.model';
 import { TaskPriority } from '../../../core/models/task-priority.enum';
+import { inject } from '@angular/core'; 
+import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
     selector: 'app-task-item',
@@ -27,4 +29,13 @@ export class TaskItem {
         startOfToday.setHours(0, 0, 0, 0);
         return new Date(t.dueDate) < startOfToday;
     }
+
+    private readonly settingsService = inject(SettingsService); // додати як поле класу
+
+  onCheckClick(): void {
+    if (!this.task().isCompleted) {
+      this.settingsService.playCompleteSound();
+    }
+    this.toggleComplete.emit();
+  }
 }
