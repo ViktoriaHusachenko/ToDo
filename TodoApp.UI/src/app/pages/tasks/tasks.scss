@@ -1,0 +1,6 @@
+.search-box { position: relative; width: 260px; }
+.search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #605e5c; font-size: 20px; }
+.search-input { padding-left: 2.25rem; border-radius: 2rem; background-color: #f3f2f1; border: none; }
+.empty-icon { font-size: 48px; color: #c8c6c4; }
+.modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 1040; }
+.modal { z-index: 1050; }

@@ -31,7 +31,9 @@
             </span>
         </div>
     </div>
-
+<button type="button" class="edit-btn" (click)="editTask.emit()">
+  <span class="material-symbols-outlined">edit</span>
+</button>
     <button type="button" class="star-btn" [class.active]="isImportant()" (click)="toggleImportant.emit()">
         <span class="material-symbols-outlined">{{ isImportant() ? 'star' : 'star_outline' }}</span>
     </button>

@@ -82,3 +82,12 @@
 .delete-btn:hover {
     color: #d13438;
 }
+
+.edit-btn {
+  border: none;
+  background: transparent;
+  color: #605e5c;
+  padding: 0.25rem;
+  flex-shrink: 0;
+}
+.edit-btn:hover { color: var(--accent-color); }

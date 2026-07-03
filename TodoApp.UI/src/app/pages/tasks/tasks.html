@@ -1,1 +1,87 @@
-<p>tasks works!</p>
+<div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h4 mb-0">{{ viewTitle() }}</h1>
+
+  <div class="d-flex align-items-center gap-2">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="search" class="form-control search-input" placeholder="Пошук задач"
+             [value]="searchTerm()" (input)="onSearchChange($any($event.target).value)" />
+    </div>
+    <button type="button" class="btn btn-primary d-flex align-items-center gap-1" (click)="openCreateModal()">
+      <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+      Додати задачу
+    </button>
+  </div>
+</div>
+
+@if (isLoading()) {
+  <div class="text-center text-muted py-5">Завантаження...</div>
+} @else if (filteredTasks().length === 0) {
+  <div class="empty-state text-center text-muted py-5">
+    <span class="material-symbols-outlined empty-icon">checklist</span>
+    <p class="mt-2 mb-0">Тут поки немає задач.</p>
+  </div>
+} @else {
+  @for (task of filteredTasks(); track task.id) {
+    <app-task-item
+      [task]="task"
+      [isImportant]="importanceService.isImportant(task.id)"
+      (toggleComplete)="onToggleComplete(task)"
+      (toggleImportant)="onToggleImportant(task.id)"
+      (editTask)="openEditModal(task)"
+      (deleteTask)="onDelete(task.id)" />
+  }
+}
+
+@if (isModalOpen()) {
+  <div class="modal-backdrop-custom" (click)="closeModal()"></div>
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingTaskId() ? 'Редагувати задачу' : 'Нова задача' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Назва</label>
+              <input type="text" class="form-control" formControlName="title" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Опис</label>
+              <textarea class="form-control" rows="2" formControlName="description"></textarea>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">Дедлайн</label>
+                <input type="date" class="form-control" formControlName="dueDate" />
+              </div>
+              <div class="col-6">
+                <label class="form-label">Пріоритет</label>
+                <select class="form-select" formControlName="priority">
+                  <option [ngValue]="TaskPriority.Low">Низький</option>
+                  <option [ngValue]="TaskPriority.Medium">Середній</option>
+                  <option [ngValue]="TaskPriority.High">Високий</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Категорія</label>
+              <select class="form-select" formControlName="categoryId">
+                <option value="">Без категорії</option>
+                @for (category of categories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Скасувати</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Зберегти</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

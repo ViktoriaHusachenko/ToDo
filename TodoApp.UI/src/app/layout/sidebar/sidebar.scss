@@ -56,3 +56,31 @@
         transition: transform 0.2s ease;
     }
 }
+
+.icon-btn-sm {
+  border: none;
+  background: transparent;
+  color: #605e5c;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn-sm .material-symbols-outlined { font-size: 16px; }
+
+.category-actions { display: none; gap: 2px; }
+.category-link:hover .category-actions { display: flex; }
+.category-link:hover .category-count { display: none; }
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.color-swatch.selected { border-color: #201f1e; }
+
+.modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 1040; }
+.modal { z-index: 1050; }

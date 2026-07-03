@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { TaskService } from '../../core/services/task.service';
 import { TaskImportanceService } from '../../core/services/task-importance.service';
 import { TaskDto } from '../../core/models/task.model';
-import { TaskItem } from '../../shared/task-item/task-item';
+import { TaskItem } from '../../shared/components/task-item/task-item';
 
 @Component({
     selector: 'app-planned',
